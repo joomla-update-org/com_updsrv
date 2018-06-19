@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<extension type="component" version="3.0" method="upgrade">
+    <name>COM_UPDSRV</name>
+	<author>Aleksey A. Morozov (AlekVolsk)</author>
+	<copyright>(C) 2018 Aleksey A. Morozov. All rights reserved.</copyright>
+	<license>GNU General Public License version 3 or later; see http://www.gnu.org/licenses/gpl-3.0.txt</license>
+    <creationDate>June 2018</creationDate>
+    <version>1.0.0</version>
+    <description>COM_UPDSRV_DESC</description>
+    <administration>
+        <menu>COM_UPDSRV_MENU</menu>
+        <files folder="admin">
+            <filename>updsrv.php</filename>
+            <filename>controller.php</filename>
+            <filename>access.xml</filename>
+            <filename>config.xml</filename>
+            <folder>controllers</folder>
+            <folder>models</folder>
+            <folder>tables</folder>
+            <folder>views</folder>
+        </files>
+        <languages folder="admin">
+            <language tag="en-GB">language/en-GB/en-GB.com_updsrv.ini</language>
+            <language tag="en-GB">language/en-GB/en-GB.com_updsrv.sys.ini</language>
+            <language tag="ru-RU">language/ru-RU/ru-RU.com_updsrv.ini</language>
+            <language tag="ru-RU">language/ru-RU/ru-RU.com_updsrv.sys.ini</language>
+        </languages>
+    </administration>
+</extension>
