@@ -45,6 +45,8 @@ class UpdsrvViewManage extends JViewLegacy
 		
 		JToolBarHelper::title(JText::_('COM_UPDSRV'), 'puzzle');
 		
+		JFactory::getApplication()->enqueueMessage(JText::_('COM_UPDSRV_NOTICE_CORE'), 'notice');
+
 		parent::display( $tpl );
 	}
 }
