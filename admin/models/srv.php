@@ -90,7 +90,6 @@ class UpdsrvModelSrv extends JModelAdmin
 					->insert('#__update_sites_extensions')
 					->columns('update_site_id, extension_id')
 					->values($data['update_site_id'] . ', ' . $li);
-				savefile('d:\_' . $li . '.txt', $query->__toString() );
 				$this->getDbo()->setQuery($query)->execute();
 			}
 		}
