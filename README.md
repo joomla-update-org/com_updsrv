@@ -1,5 +1,11 @@
 # Update server Manager
 
+**v.1.0.2**
+
+**Joomla 3.0 or later**
+
+**PHP 5.6 or later**
+
 ### EN
 
 **The component managing update servers of Joomla extensions**
