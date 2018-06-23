@@ -48,7 +48,12 @@ Joomla.submitbutton = function(task)
 
 					<div class="control-group">
 						<div class="control-label"><?php echo $this->form->getLabel('extlist'); ?></div>
-						<div class="controls"><?php echo $this->form->getInput('extlist'); ?></div>
+						<div class="controls">
+						<?php
+						$this->form->setFieldAttribute('extlist', 'readonly', $this->item->core);
+						echo $this->form->getInput('extlist');
+						?>
+						</div>
 					</div>
 
 				</div>

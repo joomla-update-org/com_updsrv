@@ -41,6 +41,11 @@ class UpdsrvViewSrv extends JViewLegacy
 		}
 
 		JToolBarHelper::title(JText::_('COM_UPDSRV_SRV_TITLE_' . ($isNew ? 'ADD' : 'MOD')), 'puzzle');
+		
+		if ($this->item->core)
+		{
+			JFactory::getApplication()->enqueueMessage(JText::_('COM_UPDSRV_NOTICE_CORE'), 'notice');
+		}
 
 		parent::display($tpl);
 	}

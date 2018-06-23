@@ -26,9 +26,28 @@ class UpdsrvControllerManage extends JControllerAdmin
 		$task = $this->getTask();
 		$value = JArrayHelper::getValue($values, $task, 0, 'int');
 
+		if (!empty($ids))
+		{
+			$model = $this->getModel('srv');
+			$core = $model->checkCore($ids);
+			$key = array_search($core, $ids);
+			if ($key !== false)
+			{
+				unset($ids[$key]);
+				$ids = array_values($ids);
+			}
+			if ($core)
+			{
+				JFactory::getApplication()->enqueueMessage(JText::sprintf('COM_UPDSRV_NO_STATE_CORE', $core), 'error');
+			}
+		}
+		
 		if (empty($ids))
 		{
-			JError::raiseWarning(500, JText::_('COM_UPDSRV_ERROR_NO_SELECTED'));
+			if (!$core)
+			{
+				JError::raiseWarning(500, JText::_('COM_UPDSRV_ERROR_NO_SELECTED'));
+			}
 		}
 		else
 		{
@@ -53,22 +72,32 @@ class UpdsrvControllerManage extends JControllerAdmin
 
 		$ids = $this->input->get('cid', [], 'array');
 
-		if (empty($ids))
+		if (empty($ids) || (int)$ids[0] <= 0)
 		{
 			JError::raiseWarning(500, JText::_('COM_INSTALLER_ERROR_NO_EXTENSIONS_SELECTED'));
 		}
 		else
 		{
-			$model = $this->getModel('manage');
-			$result = $model->copy($ids[0]);
-			if (!$result)
+			$model = $this->getModel('srv');
+			$core = $model->checkCore([(int)$ids[0]]);
+			if ($core)
 			{
-				JError::raiseWarning(500, implode('<br />', $model->getErrors()));
+				JFactory::getApplication()->enqueueMessage(JText::sprintf('COM_UPDSRV_NO_COPY_CORE', $core), 'error');
 				$this->setRedirect(JRoute::_('index.php?option=com_updsrv&view=manage', false));
 			}
 			else
 			{
-				$this->setRedirect(JRoute::_('index.php?option=com_updsrv&task=srv.edit&update_site_id=' . (int)$result, false));
+				$model = $this->getModel('manage');
+				$result = $model->copy((int)$ids[0]);
+				if (!$result)
+				{
+					JError::raiseWarning(500, implode('<br />', $model->getErrors()));
+					$this->setRedirect(JRoute::_('index.php?option=com_updsrv&view=manage', false));
+				}
+				else
+				{
+					$this->setRedirect(JRoute::_('index.php?option=com_updsrv&task=srv.edit&update_site_id=' . (int)$result, false));
+				}
 			}
 		}
 	}

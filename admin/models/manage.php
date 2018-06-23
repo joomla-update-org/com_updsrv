@@ -97,6 +97,16 @@ class UpdsrvModelManage extends JModelList
 				->order('e.name asc');
 			$item->extlist = $this->getDbo()->setQuery($query)->loadObjectList();
 			$this->translate($item->extlist);
+			
+			$item->core = false;
+			foreach ($item->extlist as $li)
+			{
+				if ($li->element == 'joomla' && $li->type == 'file')
+				{
+					$item->core = true;
+					break;
+				}
+			}
 		}
 		return $items;
 	}
@@ -134,6 +144,12 @@ class UpdsrvModelManage extends JModelList
 
 	public function copy($id)
 	{
+		if (!JFactory::getUser()->authorise('core.manage', 'com_updsrv'))
+		{
+			JError::raiseWarning(403, JText::_('JLIB_APPLICATION_ERROR_EDITSTATE_NOT_PERMITTED'));
+			return false;
+		}
+
 		$table = $this->getTable();
 		$table->load($id);
 		$table->update_site_id = 0;

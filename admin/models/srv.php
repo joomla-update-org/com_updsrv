@@ -25,19 +25,27 @@ class UpdsrvModelSrv extends JModelAdmin
 	public function getItem($update_site_id = null)
 	{
 		$item = parent::getItem($update_site_id);
+		$this->setState('core', false);
 		$item->extlist = [];
 		if ($item->update_site_id != 0)
 		{
 			$query = $this->getDbo()->getQuery(true)
-				->select('extension_id')
-				->from('#__update_sites_extensions')
-				->where('update_site_id=' . $item->update_site_id);
+				->select('u.extension_id, e.element, e.type')
+				->from('#__update_sites_extensions as u')
+				->innerJoin('#__extensions as e on e.extension_id=u.extension_id')
+				->where('u.update_site_id=' . $item->update_site_id);
 			$list = $this->getDbo()->setQuery($query)->loadObjectList();
 			foreach ($list as $li)
 			{
 				$item->extlist[] = $li->extension_id;
+				if ($li->element == 'joomla' && $li->type == 'file')
+				{
+					$item->core = true;
+					$this->setState('core', true);
+				}
 			}
 		}
+		$item->core = $this->getState('core');
 		return $item;
 	}
 	
@@ -71,6 +79,11 @@ class UpdsrvModelSrv extends JModelAdmin
 		if ($data['update_site_id'] == 0)
 		{
 			$data['last_check_timestamp'] = 0;
+			$core = false;
+		}
+		else
+		{
+			$core = $this->checkCore( [$data['update_site_id']] );
 		}
 		
 		$result = parent::save($data);
@@ -92,6 +105,27 @@ class UpdsrvModelSrv extends JModelAdmin
 					->values($data['update_site_id'] . ', ' . $li);
 				$this->getDbo()->setQuery($query)->execute();
 			}
+			
+			if ($core)
+			{
+				$params = JComponentHelper::getParams('com_joomlaupdate');
+				$params->set('updatesource', 'custom');
+				$params->set('customurl', $data['location']);
+				
+				$query = $this->getDbo()->getQuery(true)
+					->update('#__extensions')
+					->set('params=' . $this->getDbo()->quote($params->toString()))
+					->where('element=' . $this->getDbo()->quote('com_joomlaupdate') );
+				try
+				{
+					$this->getDbo()->setQuery($query)->execute();
+				}
+				catch (Exception $e)
+				{
+					$this->setError($e->getMessage());
+					return false;
+				}
+			}
 		}
 		
 		return $result;
@@ -99,9 +133,27 @@ class UpdsrvModelSrv extends JModelAdmin
 	
 	public function delete(&$pks)
 	{
+		if (!is_array($pks))
+		{
+			$pks = [$pks];
+		}
+
+		$core = $this->checkCore($pks);
+		$key = array_search($core, $pks);
+		if ($key !== false)
+		{
+			unset($pks[$key]);
+			$pks = array_values($pks);
+		}
+		
+		if ($core)
+		{
+			JFactory::getApplication()->enqueueMessage(JText::sprintf('COM_UPDSRV_NO_DELETE_CORE', $core), 'error');
+		}
+		
 		$result = parent::delete($pks);
 
-		if ($result)
+		if (count($pks) > 0 && $result)
 		{
 			$query = $this->getDbo()->getQuery(true)
 				->delete('#__update_sites_extensions')
@@ -114,5 +166,26 @@ class UpdsrvModelSrv extends JModelAdmin
 	protected function cleanCache($group = null, $client_id = 0)
 	{
 		parent::cleanCache('com_updsrv');
+	}
+
+	public function checkCore($ids)
+	{
+		$core = 0;
+		$query = $this->getDbo()->getQuery(true)
+			->select('u.update_site_id, e.element, e.type')
+			->from('#__update_sites_extensions as u')
+			->innerJoin('#__extensions as e on e.extension_id=u.extension_id')
+			->where('u.update_site_id in (' . implode(',', $ids) . ')');
+		$list = $this->getDbo()->setQuery($query)->loadObjectList();
+		
+		foreach ($list as $li)
+		{
+			if ($li->element == 'joomla' && $li->type == 'file')
+			{
+				$core = $li->update_site_id;
+				break;
+			}
+		}
+		return $core;
 	}
 }
