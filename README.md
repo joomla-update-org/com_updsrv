@@ -1,6 +1,6 @@
 # Update server Manager
 
-**v.1.0.2**
+**v.1.0.3**
 
 **Joomla 3.0 or later**
 
